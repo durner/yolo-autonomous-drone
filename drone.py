@@ -1,6 +1,6 @@
 import libardrone.libardrone as libardrone
 import time
-import thread
+from threading import Thread
 import cv2
 
 
@@ -9,13 +9,14 @@ def main():
     drone.reset()
 
     try:
-        thread.start_new_thread(getKeyInput, (drone,))
-        thread.start_new_thread(getVideoImage, (drone,))
+        t1 = Thread(target = getKeyInput, args = (drone,))
+        t2 = Thread(target = getVideoImage, args = (drone,))
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
     except:
         print "Error: unable to start thread"
-
-    while not stop:
-        pass
 
     print("Shutting down...")
     cv2.destroyAllWindows()
@@ -28,10 +29,10 @@ def main():
 def getKeyInput(drone):
     global stop
     global key
-    while True:
+    while not stop: # while 'bedingung true'
         time.sleep(0.1)
 
-        if key == "t":
+        if key == "t": # if 'bedingung true'
             drone.takeoff()
         elif key == " ":
             drone.land()
@@ -64,14 +65,15 @@ def getKeyInput(drone):
 
 def getVideoImage(drone):
     global key
-    while True:
+    global stop
+    while not stop:
         try:
             # print pygame.image
             pixelarray = drone.get_image()
             pixelarray = cv2.cvtColor(pixelarray, cv2.COLOR_BGR2RGB)
             if pixelarray != None:
                 cv2.imshow('frame', pixelarray)
-                key = chr(cv2.waitKey(1))
+                key = chr(cv2.waitKey(100))
         except:
             pass
 
