@@ -176,7 +176,7 @@ def draw_detections(impath,num,thresh,boxes,classes,labels,save_name):
             if(top < 0): top = 0;
             if(bot > ImageSize[1]-1): bot = ImageSize[1]-1;
 
-            print "The four cords are: ",left,right,top,bot
+            # print "The four cords are: ",left,right,top,bot
             drawable.rectangle([left,top,right,bot],outline="red")
             img.save("results/" + save_name)
-            print labels[max_class],": ",boxes[i].probs[max_class]
+            # print labels[max_class],": ",boxes[i].probs[max_class]

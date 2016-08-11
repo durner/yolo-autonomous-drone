@@ -1,5 +1,5 @@
 class PID(object):
-    def __init__(self, K_p=0.4, K_d=0.01, K_i=0.00, dt=0.5):
+    def __init__(self, K_p=0.4, K_d=0.00, K_i=0.00, dt=0.5):
         self.K_p = K_p
         self.K_d = K_d
         self.K_i = K_i

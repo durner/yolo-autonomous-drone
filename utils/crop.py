@@ -16,6 +16,9 @@ def crop(imPath,resize_width=256,resize_height=256,new_width=224,new_height=224)
     bottom = (height + new_height)/2
 
     im = im.crop((left, top, right, bottom))
+
+    im.save("frames/cropped.jpg")
+
     image_array = np.array(im)
     image_array = np.rollaxis(image_array,2,0)
     image_array = image_array/255.0
