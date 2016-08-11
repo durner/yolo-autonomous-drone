@@ -5,12 +5,9 @@ from threading import Thread, Lock, Condition
 import cv2
 import numpy
 import keras
-import copy
-from PID import PID
-from YOLO import SimpleNet, convert_yolo_detections, do_nms_sort, draw_detections
+from YOLO import SimpleNet, convert_yolo_detections, do_nms_sort
 from actuators import Actuator
 from utils.TinyYoloNet import ReadTinyYOLONetWeights
-from utils.crop import crop
 
 
 class YOLODrone(object):
@@ -24,6 +21,7 @@ class YOLODrone(object):
         self.condition = Condition()
         self.update = False
         self.contours = None
+        self.boxes_update = False
         self.image = None
 
         self.labels = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
@@ -68,7 +66,7 @@ class YOLODrone(object):
         else:
             try:
                 self.mutex = Lock()
-                t1 = Thread(target=self.autonomousFlight, args=(640, 360, 98, 0.1, self.labels,))
+                t1 = Thread(target=self.autonomousFlight, args=(448, 448, 98, 0.1, self.labels,))
                 t2 = Thread(target=self.getVideoStream, args=())
                 t3 = Thread(target=self.getBoundingBoxes, args=())
                 t1.start()
@@ -124,37 +122,38 @@ class YOLODrone(object):
             if self.key != " ":
                 self.key = ""
 
-    def getVideoStream(self):
+    def getVideoStream(self, img_width=448, img_height=448):
         while not self.stop:
-            filename = "frame"
-            filename += ".jpg"
-            self.mutex.acquire()
-            img = cv2.imread("results/" + filename)
-            self.mutex.release()
+            img = self.image
             if img != None:
                 nav_data = self.drone.get_navdata()
-
+                #
                 nav_data = nav_data[0]
-
+                #
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 font_size = 0.5
 
-                cv2.putText(img, 'State: %s' % nav_data['ctrl_state'], (5, 15), font, font_size, (255, 255, 255))
-
-                cv2.putText(img, 'Phi (+Roll Right/- Roll Left): %.0f' % nav_data['phi'], (5, 30), font, font_size,
-                            (255, 255, 255))
-                cv2.putText(img, 'Psi (+Turn Right/- Turn Left): %.0f' % nav_data['psi'], (5, 45), font, font_size,
-                            (255, 255, 255))
-                cv2.putText(img, 'Theta (+Up/-Down): %.0f' % nav_data['theta'], (5, 60), font, font_size,
-                            (255, 255, 255))
-
-                cv2.putText(img, 'Altitude: %.0f' % nav_data['altitude'], (5, 75), font, font_size, (255, 255, 255))
-                cv2.putText(img, 'vx/vy/vz: %.0f/%.0f/%.0f' % (nav_data['vx'], nav_data['vy'], nav_data['vz']),
-                            (5, 90), font, font_size, (255, 255, 255))
-
-                cv2.putText(img, 'Battery: %.0f%%' % nav_data['battery'], (5, 105), font, font_size, (255, 255, 255))
-
+                cv2.putText(img, 'Altitude: %.0f' % nav_data['altitude'], (5, 15), font, font_size, (255, 255, 255))
+                #
+                cv2.putText(img, 'Battery: %.0f%%' % nav_data['battery'], (5, 30), font, font_size, (255, 255, 255))
+                #
                 cv2.drawContours(img, self.contours, -1, (0, 255, 0), 3)
+                thresh = 0.2
+                self.mutex.acquire()
+                if self.boxes_update:
+                    self.boxes_update = False
+                    for b in self.boxes:
+                        max_class = numpy.argmax(b.probs)
+                        prob = b.probs[max_class]
+                        if (prob > thresh and self.labels[max_class] == "person"):
+                            left = (b.x - b.w / 2.) * img_width
+                            right = (b.x + b.w / 2.) * img_width
+
+                            top = (b.y - b.h / 2.) * img_height
+                            bot = (b.y + b.h / 2.) * img_height
+
+                            cv2.rectangle(img, (int(left), int(top)), (int(right), int(bot)), (0, 0, 255), 3)
+                self.mutex.release()
                 cv2.imshow('frame', img)
 
                 l = cv2.waitKey(150)
@@ -173,80 +172,42 @@ class YOLODrone(object):
     def getBoundingBoxes(self):
         newest = time.time()
         while not self.stop:
-            try:
+            #try:
                 pixelarray = self.drone.get_image()
                 pixelarray = cv2.cvtColor(pixelarray, cv2.COLOR_BGR2RGB)
-                # pixelarray = cv2.GaussianBlur(pixelarray, (3, 3), 0)
 
                 # Check for Blurry
                 gray = cv2.cvtColor(pixelarray, cv2.COLOR_RGB2GRAY)
                 fm = self.variance_of_laplacian(gray)
                 if fm < 10:
-                    print "non"
                     continue
 
-                print "Anazlyzse"
-
                 if pixelarray != None:
-                    newest = time.time()
-                    filename = "frame"
-                    filename += ".jpg"
+                    # ima = pixelarray[120:540]
+                    ima = cv2.resize(pixelarray, (448, 448))
 
+                    image = cv2.cvtColor(ima, cv2.COLOR_RGB2BGR)
 
-
-                    ############################################
-
-                    cv2.imwrite("frames/" + filename, pixelarray)
-
-                    image = crop("frames/" + filename, resize_width=400, resize_height=400, new_width=448,
-                                 new_height=448)
+                    image = numpy.rollaxis(image, 2, 0)
+                    image = image / 255.0
+                    image = image * 2.0 - 1.0
                     image = numpy.expand_dims(image, axis=0)
-                    #
 
                     out = self.model.predict(image)
-
                     predictions = out[0]
                     boxes = convert_yolo_detections(predictions)
 
+                    self.mutex.acquire()
                     self.boxes = do_nms_sort(boxes, 98)
-                    self.image = pixelarray
+                    self.image = ima
                     self.update = True
+                    self.mutex.release()
 
-
-                    #
-                    # mutex.acquire()
-                    draw_detections("frames/" + filename, 98, 0.1, boxes, 20, self.labels, filename)
-
-                    ############################################
-                    ############################################
-                    ############################################
-                    # ima = pixelarray[120:540]
-                    # ima = cv2.resize(ima, (448, 448))
-
-
-                    # image = cv2.cvtColor(ima, cv2.COLOR_RGB2BGR)
-
-                    # image = numpy.rollaxis(image, 2, 0)
-                    # image = image / 255.0
-                    # image = image * 2.0 - 1.0
-                    # image = numpy.expand_dims(image, axis=0)
-
-                    #out = self.model.predict(image)
-                    #predictions = out[0]
-                    #boxes = convert_yolo_detections(predictions)
-
-                    #self.boxes = do_nms_sort(boxes, 98)
-                    #self.image = ima
-                    #self.update = True
-
-                    # cv2.imwrite("frames/" + filename, pixelarray)
-                    #cv2.imwrite("frames/cropped_" + filename, ima)
-                    #draw_detections("frames/cropped_" + filename, 98, 0.1, boxes, 20, self.labels, filename)
-            except:
-                pass
+            #except:
+            #    pass
 
     def autonomousFlight(self, img_width, img_height, num, thresh, labels):
-        actuator = Actuator(self.drone, img_width, img_width * 0.3)
+        actuator = Actuator(self.drone, img_width, img_width * 0.5)
 
         print self.drone.navdata
         while not self.stop:
@@ -263,7 +224,6 @@ class YOLODrone(object):
                 image = cv2.inRange(image, lower_red_1, upper_red_1)
 
                 # Put on median blur to reduce noise
-                # image = cv2.GaussianBlur(image, (15, 15), 2)
                 image = cv2.medianBlur(image, 11)
 
                 # Find contours and decide if hat is one of them
@@ -271,12 +231,13 @@ class YOLODrone(object):
 
                 self.contours = contours
 
-                boxes = copy.deepcopy(self.boxes)
+                boxes = self.boxes
 
                 best_prob = -99999
                 best_box = -1
                 best_contour = None
 
+                self.mutex.acquire()
                 for i in range(num):
                     # for each box, find the class with maximum prob
                     max_class = numpy.argmax(boxes[i].probs)
@@ -302,13 +263,16 @@ class YOLODrone(object):
                             else:
                                 intersection = True
 
-                                if best_prob < prob and w > 50:
+                                if best_prob < prob and w > 30:
                                     print "prob found"
                                     best_prob = prob
                                     best_box = i
                                     best_contour = contour
 
+                self.boxes_update = True
                 if best_box < 0:
+                    # print "No Update"
+                    self.mutex.release()
                     self.drone.at(libardrone.at_pcmd, False, 0, 0, 0, 0)
                     continue
 
@@ -333,7 +297,8 @@ class YOLODrone(object):
 
                 x, y, w, h = cv2.boundingRect(best_contour)
 
-                actuator.step(right - width/2, width)
+                actuator.step(right - width/2., width)
+                self.mutex.release()
 
 
 def main():
