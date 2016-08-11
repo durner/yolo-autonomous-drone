@@ -1,18 +1,19 @@
+import time
 from libardrone import libardrone
 
 from PID import PID
 
 class Actuator(object):
     def __init__(self, drone, picture_width, desired_move):
-        self.turn = PID(K_p=0.5, K_d=0.00)
-        self.move = PID(K_p=0.25, K_d=0.00)
+        self.turn = PID(K_p=3, K_d=0.1)
+        self.move = PID(K_p=0.3, K_d=0.02)
         self.height = PID(K_p=0.2, K_d=0.00)
         self.picture_width = picture_width
         self.desired_move = desired_move
         self.drone = drone
-        self.drone.reset()
-        # self.drone.takeoff()
-        # self.drone.takeoff()
+        time.sleep(0.05)
+        self.drone.takeoff()
+        time.sleep(0.05)
 
     def step(self, wdithmid, width):
         desired_turn = self.picture_width / 2
