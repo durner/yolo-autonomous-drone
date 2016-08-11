@@ -159,7 +159,7 @@ def draw_detections(impath,num,thresh,boxes,classes,labels,save_name):
         #for each box, find the class with maximum prob
         max_class = np.argmax(boxes[i].probs)
         prob = boxes[i].probs[max_class]
-        if(prob > thresh):
+        if(prob > thresh and labels[max_class] == "person"):
             b = boxes[i]
 
             temp = b.w
