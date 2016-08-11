@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 weights/
+frames/
+results/
 # C extensions
 *.so
 
