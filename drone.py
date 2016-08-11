@@ -127,16 +127,13 @@ class YOLODrone(object):
             img = self.image
             if img != None:
                 nav_data = self.drone.get_navdata()
-                #
                 nav_data = nav_data[0]
-                #
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 font_size = 0.5
 
                 cv2.putText(img, 'Altitude: %.0f' % nav_data['altitude'], (5, 15), font, font_size, (255, 255, 255))
-                #
                 cv2.putText(img, 'Battery: %.0f%%' % nav_data['battery'], (5, 30), font, font_size, (255, 255, 255))
-                #
+
                 cv2.drawContours(img, self.contours, -1, (0, 255, 0), 3)
                 thresh = 0.2
                 self.mutex.acquire()
@@ -172,7 +169,7 @@ class YOLODrone(object):
     def getBoundingBoxes(self):
         newest = time.time()
         while not self.stop:
-            #try:
+            try:
                 pixelarray = self.drone.get_image()
                 pixelarray = cv2.cvtColor(pixelarray, cv2.COLOR_BGR2RGB)
 
@@ -203,8 +200,8 @@ class YOLODrone(object):
                     self.update = True
                     self.mutex.release()
 
-            #except:
-            #    pass
+            except:
+                pass
 
     def autonomousFlight(self, img_width, img_height, num, thresh, labels):
         actuator = Actuator(self.drone, img_width, img_width * 0.5)

@@ -24,7 +24,7 @@ class Actuator(object):
 
         um = self.move.step(self.desired_move, actual_move)
 
-        height = 500
+        height = 550
         nav_data = self.drone.get_navdata()
         nav_data = nav_data[0]
         uh = self.height.step(height, nav_data['altitude'])
