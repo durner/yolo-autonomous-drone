@@ -11,15 +11,13 @@ class Actuator(object):
         self.desired_move = desired_move
         self.drone = drone
         self.drone.reset()
-        self.drone.takeoff()
-        self.drone.takeoff()
+        # self.drone.takeoff()
+        # self.drone.takeoff()
 
     def step(self, wdithmid, width):
         desired_turn = self.picture_width / 2
         actual_turn = wdithmid
         actual_move = width
-
-
 
         ut = self.turn.step(desired_turn, actual_turn)
 

@@ -181,19 +181,24 @@ class YOLODrone(object):
                 # Check for Blurry
                 gray = cv2.cvtColor(pixelarray, cv2.COLOR_RGB2GRAY)
                 fm = self.variance_of_laplacian(gray)
-                if fm < 30:
+                if fm < 10:
+                    print "non"
                     continue
 
-                if pixelarray != None and newest < (time.time() - 0.2):
+                print "Anazlyzse"
+
+                if pixelarray != None:
                     newest = time.time()
                     filename = "frame"
                     filename += ".jpg"
+
+
 
                     ############################################
 
                     cv2.imwrite("frames/" + filename, pixelarray)
 
-                    image = crop("frames/" + filename, resize_width=512, resize_height=512, new_width=448,
+                    image = crop("frames/" + filename, resize_width=400, resize_height=400, new_width=448,
                                  new_height=448)
                     image = numpy.expand_dims(image, axis=0)
                     #
@@ -203,13 +208,9 @@ class YOLODrone(object):
                     predictions = out[0]
                     boxes = convert_yolo_detections(predictions)
 
-                    # self.condition.acquire()
                     self.boxes = do_nms_sort(boxes, 98)
                     self.image = pixelarray
                     self.update = True
-
-                    # self.condition.notify()
-                    # self.condition.release()
 
 
                     #
@@ -245,7 +246,7 @@ class YOLODrone(object):
                 pass
 
     def autonomousFlight(self, img_width, img_height, num, thresh, labels):
-        actuator = Actuator(self.drone, img_width, img_width * 0.35)
+        actuator = Actuator(self.drone, img_width, img_width * 0.3)
 
         print self.drone.navdata
         while not self.stop:
@@ -256,7 +257,7 @@ class YOLODrone(object):
                 image = cv2.medianBlur(hsv, 3)
 
                 # Filter by color red
-                lower_red_1 = numpy.array([15, 100, 100])
+                lower_red_1 = numpy.array([20, 100, 100])
                 upper_red_1 = numpy.array([55, 255, 255])
 
                 image = cv2.inRange(image, lower_red_1, upper_red_1)
@@ -332,7 +333,7 @@ class YOLODrone(object):
 
                 x, y, w, h = cv2.boundingRect(best_contour)
 
-                actuator.step(right - width/2, w)
+                actuator.step(right - width/2, width)
 
 
 def main():
