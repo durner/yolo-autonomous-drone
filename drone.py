@@ -255,12 +255,8 @@ class YOLODrone(object):
                             top = (boxes[i].y - boxes[i].h / 2.) * img_height
                             bot = (boxes[i].y + boxes[i].h / 2.) * img_height
 
-                            if (x + w < left or right < x or y + h < top or bot < y):
-                                intersection = False
-                            else:
-                                intersection = True
-
-                                if best_prob < prob and w > 30:
+                            if not (x + w < left or right < x or y + h < top or bot < y):
+                               if best_prob < prob and w > 30:
                                     print "prob found"
                                     best_prob = prob
                                     best_box = i
@@ -288,10 +284,7 @@ class YOLODrone(object):
                 if (bot > img_height - 1): bot = img_height - 1;
 
                 width = right - left
-                print width
-                print right - width/2
                 height = bot - top
-
                 x, y, w, h = cv2.boundingRect(best_contour)
 
                 actuator.step(right - width/2., width)
