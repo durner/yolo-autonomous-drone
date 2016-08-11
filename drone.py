@@ -144,7 +144,7 @@ class YOLODrone(object):
             try:
                 pixelarray = self.drone.get_image()
                 pixelarray = cv2.cvtColor(pixelarray, cv2.COLOR_BGR2RGB)
-                if pixelarray != None and newest < (time.time() - 0.15):
+                if pixelarray != None and newest < (time.time() - 0.1):
                     newest = time.time()
                     filename = "frame"
                     filename += ".jpg"
