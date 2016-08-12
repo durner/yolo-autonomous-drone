@@ -4,3 +4,6 @@ The YOLO Drone localizes and follows people. Since in many scenes more than one 
 
 ## Requirements
 To run this project Keras and Theano are needed for the deeplearning part. Furthermore a working libardrone must be installed. For shirt detection opencv must be installed on the system.
+
+## 
+For the YOLO network we tweaked the original implementation of https://github.com/sunshineatnoon/Darknet.keras
