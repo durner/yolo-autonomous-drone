@@ -215,8 +215,8 @@ class YOLODrone(object):
                 image = cv2.medianBlur(hsv, 3)
 
                 # Filter by color red
-                lower_red_1 = numpy.array([20, 120, 120])
-                upper_red_1 = numpy.array([40, 255, 255])
+                lower_red_1 = numpy.array([15, 150, 150])
+                upper_red_1 = numpy.array([35, 255, 255])
 
                 image = cv2.inRange(image, lower_red_1, upper_red_1)
 

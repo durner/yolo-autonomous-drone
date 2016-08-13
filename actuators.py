@@ -5,8 +5,8 @@ from PID import PID
 
 class Actuator(object):
     def __init__(self, drone, picture_width, desired_move):
-        self.turn = PID(K_p=0.5, K_d=0.1)
-        self.move = PID(K_p=0.2, K_d=0.01)
+        self.turn = PID(K_p=0.6, K_d=0.1)
+        self.move = PID(K_p=0.15, K_d=0.01)
         self.height = PID(K_p=0.2, K_d=0.00)
         self.picture_width = picture_width
         self.desired_move = desired_move
