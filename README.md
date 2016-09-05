@@ -3,9 +3,7 @@
 YOLO Autonomous Drone - Deep Learning Person Detection
 ===================
 
-The YOLO Drone localizes and follows people. Since in many scenes more than one person might be in the picture we added special person features to detect the right person. An easy solution was the colour of the person's shirt. Hence, we require the "operator" of the drone to have a yellow shirt.
-
-[TOC]
+The YOLO Drone localizes and follows people with the help of the YOLO Deep Network. Since in many scenes more than one person might be in the picture we added special person features to detect the right person. An convinient solution was the colour of the person's shirt. Hence, we require the "operator" of the drone to wear a yellow shirt.
 
 ## Requirements
 To run this project Keras and Theano are needed for the deeplearning part. Furthermore a working libardrone must be installed. For shirt detection opencv must be installed on the system.
@@ -40,7 +38,7 @@ def main():
 
 ![Detection 1](https://raw.githubusercontent.com/durner/yolo-autonomous-drone/master/pictures/detection_1.png "Detection 1")![Detection 2](https://raw.githubusercontent.com/durner/yolo-autonomous-drone/master/pictures/detection_2.png "Detection 2")
 
-As already described the drone does look for persons. The interface marks persons / group of persons with read boxes. Additionally, a yellow t-shirt determines the real operator of the drone which is also highlighted in the interface. If more than one person does wear a yellow shirt the drone chooses the person with the biggest area of yellow.
+As already described the drone looks for persons. The interface marks persons / group of persons with read boxes. Additionally, a yellow t-shirt determines the real operator of the drone which is also highlighted in the interface. If more than one person wears a yellow shirt the drone chooses the person with the biggest area of yellow.
 
 ## Manual Interface
 If you don't press any key the drone will hover at its position. Use following keys to control the drone.
