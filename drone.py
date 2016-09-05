@@ -11,11 +11,11 @@ from utils.TinyYoloNet import ReadTinyYOLONetWeights
 
 
 class YOLODrone(object):
-    def __init__(self, manuel=True):
+    def __init__(self, manual=True):
         self.key = None
         self.stop = False
         self.mutex = None
-        self.manuel = manuel
+        self.manuel = manual
         self.PID = None
         self.boxes = None
         self.condition = Condition()
@@ -292,7 +292,7 @@ class YOLODrone(object):
 
 
 def main():
-    drone = YOLODrone(manuel=False)
+    drone = YOLODrone(manual=False)
     drone.start()
 
 
