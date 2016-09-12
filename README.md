@@ -1,5 +1,3 @@
-
-
 YOLO Autonomous Drone - Deep Learning Person Detection
 ===================
 
@@ -35,7 +33,7 @@ def main():
 
 ## Autonomous Interface
 
-![](master/pictures/detection_1.png?raw=true "Detection 1")![](master/pictures/detection_2.png?raw=true "Detection 2")
+![Detection 1](pictures/detection_1.png?raw=true "Detection 1") ![Detection 2](pictures/detection_2.png?raw=true "Detection 2")
 
 As already described the drone looks for persons. The interface marks persons / group of persons with read boxes. Additionally, a yellow t-shirt determines the real operator of the drone which is also highlighted in the interface. If more than one person wears a yellow shirt the drone chooses the person with the biggest area of yellow.
 
@@ -67,4 +65,4 @@ The current master of this project can be found at https://github.com/durner/yol
 - drone.py : Main file of the project. Includes the manual interface, the glue code to the autonomous interface between YOLO Network and Actuators. All multithreading and OpenCV pre-processing is handled.
 - PID.py : simple PID controller interface to easily control the movements of the drone (incl. smoothing of the movements).
 - YOLO.py : Set up of the YOLO Deep network in python. The subfolder utils include further needed files for the YOLO net.
-- actuators.py : With the help of the localized operator the actuators calculate how the drone needs to move to center the operator and follow him.
+- actuators.py : With the help of the localized operator the actuators calculate how the drone needs to move to center the operator and follow him. Uses PID controllers for calculating the movements.
